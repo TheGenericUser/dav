@@ -1,0 +1,60 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#Load the CSV file into a DataFrame
+csv_path = 'dataset.csv'  # Replace with the path to your CSV file
+df = pd.read_csv(csv_path)
+remove_redundant_columns = ['a', 'an', 'and', 'any', 'are', 'by', 'can', 'cannot',
+                            'could', 'did', 'do', 'get', 'got', 'has', 'have', 'her',
+                            'him', 'his', 'hit', 'is', 'it', 'into', 'its', 'of',
+                            'ok', 'on', 'than', 'the', 'their', 'them', 'then', 'there', 'these',
+                            'they', 'this', 'those', 'thought', 'though', 'too', 'us', 'want', 'wanted',
+                            'went', 'were', 'when', 'what', 'where', 'which', 'who',  'why', 'will', 'with',
+                            'yes', 'that', 'your', 'from', 'please', 'here']
+#
+columns_to_sum = df.columns.difference(['Email'])
+
+# Calculate the total sum vertically for each column
+total_sum = df[columns_to_sum].sum()
+
+#Use str.replace to replace # with @ in the 'email' column
+df['Email'] = df['Email'].str.replace('#', '@')
+df = df.drop_duplicates(subset='Email', keep='first')
+# Filter columns with a total sum less than 100
+df_filtered = df.filter(items=total_sum[total_sum >= 100].index)
+email_row = df.loc[:, 'Email']
+df_filtered = pd.concat([email_row, df_filtered], axis=1)
+df_filtered = df_filtered.drop(columns=remove_redundant_columns, errors='ignore')
+df_filtered.insert(0, 'Serial Number', range(1, len(df_filtered) + 1))
+df_filtered.to_csv('clean_data.csv', index=False)
+
+csv_path = 'clean_data.csv'
+df = pd.read_csv(csv_path)
+columns_to_sum = df.columns.difference(['Email', 'Serial Number'])
+
+# Calculate the total sum vertically for each column
+total_sum = df[columns_to_sum].sum()
+
+total_sum = df[columns_to_sum].sum()
+
+# Get the top 10 most frequent words
+top_10_words = total_sum.nlargest(10)
+
+# Create a bar graph for the top 10 words
+plt.figure(figsize=(12, 6))
+top_10_words.sort_values().plot(kind='barh', color='skyblue')
+plt.xlabel('Frequency')
+plt.ylabel('Words')
+plt.title('Top 10 Word Frequency in spam mails')
+plt.show()
+
+# Filter top 10 words with length 4 or above
+top_10_words = total_sum[total_sum.index.str.len() >= 5].nlargest(10)
+
+# Create a bar graph for the top 10 words
+plt.figure(figsize=(12, 6))
+top_10_words.sort_values().plot(kind='barh', color='skyblue')
+plt.xlabel('Frequency')
+plt.ylabel('Words')
+plt.title('Top 10 Words (Length >= 5) Frequency in spam mails')
+plt.show()
